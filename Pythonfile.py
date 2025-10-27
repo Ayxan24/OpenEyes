@@ -23,3 +23,4 @@ if __name__ == "__main__":
     print("Recording via Wayland portal — screen picker may appear...")
     record_screen()
     print("Done! Check your folder for the video file.")
+    print("cart")
