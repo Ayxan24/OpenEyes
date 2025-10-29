@@ -26,9 +26,10 @@ def record_clip():
     "-encoder", "gpu",
     "-cursor", "yes",
 #    "-ro", SAVE_DIR,
-    "-o", "clip_%Y-%m-%d_%H-%M-%S.mp4",
+    "-o", "clip_%Y-%m-%d_%H-%M-%S.mkv",
     "-keyint","2.0",
-#    "-c", "hevc",
+    "-c", "mkv",
+    "-a", "",
 #    "-r", "15",
 #    "-replay-storage", "disk",
 #    "-restart-replay-on-save", "yes"
