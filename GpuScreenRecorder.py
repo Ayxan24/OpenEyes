@@ -30,7 +30,8 @@ VIDEO_RESOLUTION = config.get('VIDEO_RESOLUTION', (1280, 720))
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 def record_clip():
-    output_file = os.path.join(SAVE_DIR, f"clip_%Y-%m-%d_%H-%M-%S.{FILEFORMAT}")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_file = os.path.join(SAVE_DIR, f"clip_{timestamp}.{FILEFORMAT}")
     
     cmd = [
     "nice", "-n", "19",
@@ -47,22 +48,27 @@ def record_clip():
     "-a", "",
     "-o", output_file,
     "-keyint", "2.0",
-    "-c", FILEFORMAT,
+#    "-c", FILEFORMAT,
     ]
-    print(f"[INFO] Recording GPU-based {DURATION}s clips at {FPS}fps to {SAVE_DIR}")
+    print(f"[INFO] Recording GPU-based {DURATION}s clip at {FPS}fps: {output_file}")
     proc = subprocess.Popen(cmd)
 
+    time.sleep(DURATION)  # record for configured duration
+
+    # stop gpu-screen-recorder gracefully
+    proc.terminate()
     try:
-        proc.wait()
-    except KeyboardInterrupt:
-        proc.terminate()
-        print("\n[INFO] Stopped.")
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+
+    print(f"[INFO] Saved clip: {output_file}")
 
 def main():
-    print("Starting continuous 15s 1fps screen capture (low CPU)...")
-#    while True:
-    record_clip()
-    print("next clip...")
+    print(f"Starting continuous {DURATION}s {FPS}fps screen capture (low CPU)...")
+    while True:
+        record_clip()
+        print("next clip...")
         # if you want a pause between clips, add a small sleep
         # time.sleep(1)
 
