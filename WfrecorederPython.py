@@ -3,18 +3,35 @@ import subprocess
 import time
 from datetime import datetime
 
+# === READ CONFIG ===
+def read_config(config_file="CONFIG.cfg"):
+    config = {}
+    with open(config_file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                try:
+                    exec(line, {"os": os}, config)
+                except:
+                    pass
+    return config
+
+config = read_config()
+
 # === SETTINGS ===
-SAVE_DIR = os.path.expanduser("~/CODES/openeyesvideos")
-FPS = 1
-DURATION = 15
-CODEC = "libx264"
-GEOMETRY = "960x540+0,0"  # reduced resolution for lower CPU
+SAVE_DIR = config.get('SAVE_DIR', os.path.expanduser("~/CODES/openeyesvideos"))
+FPS = config.get('FPS', 1)
+DURATION = config.get('DURATION', 15)
+CODEC = config.get('CODEC', 'libx264')
+FILEFORMAT = config.get('FILEFORMAT', 'mp4')
+VIDEO_RESOLUTION = config.get('VIDEO_RESOLUTION', (1280, 720))
+GEOMETRY = f"{VIDEO_RESOLUTION[0]}x{VIDEO_RESOLUTION[1]}+0,0"
 
 os.makedirs(SAVE_DIR, exist_ok=True)
 
 def record_clip():
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    filename = os.path.join(SAVE_DIR, f"record_{timestamp}.mp4")
+    filename = os.path.join(SAVE_DIR, f"record_{timestamp}.{FILEFORMAT}")
 
     cmd = [
         "nice", "-n", "19",
@@ -25,11 +42,10 @@ def record_clip():
         "--geometry", GEOMETRY,
     ]
 
-
     print(f"[INFO] Recording new clip: {filename}")
     proc = subprocess.Popen(cmd)
 
-    time.sleep(DURATION)  # record for 15 seconds
+    time.sleep(DURATION)  # record for configured duration
 
     # stop wf-recorder gracefully
     proc.terminate()
@@ -41,7 +57,7 @@ def record_clip():
     print(f"[INFO] Saved clip: {filename}")
 
 def main():
-    print("Starting continuous 15s 1fps screen capture (low CPU)...")
+    print(f"Starting continuous {DURATION}s {FPS}fps screen capture (low CPU)...")
     while True:
         record_clip()
         print("next clip...")
